@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(val) {
+      return val is timestamp && val <= request.time;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['userId', 'title', 'category', 'summary', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.category is string && data.category.size() > 0 && data.category.size() <= 100
+        && data.summary is string && data.summary.size() <= 2000
+        && (!('content' in data) || (data.content is string && data.content.size() <= 50000))
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 20))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidProtocol(data) {
+      return data.keys().hasAll(['userId', 'name', 'category', 'safetyNotes', 'status', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.category is string && data.category.size() > 0 && data.category.size() <= 100
+        && data.safetyNotes is string && data.safetyNotes.size() <= 5000
+        && data.status is string && data.status.size() <= 50
+        && (!('reagents' in data) || (data.reagents is list && data.reagents.size() <= 50))
+        && (!('steps' in data) || (data.steps is list && data.steps.size() <= 100))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['userId', 'title', 'modelUsed', 'role', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.modelUsed is string && data.modelUsed.size() > 0 && data.modelUsed.size() <= 100
+        && data.role is string && data.role.size() > 0 && data.role.size() <= 100
+        && (!('lastMessage' in data) || (data.lastMessage is string && data.lastMessage.size() <= 5000))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /projects/{projectId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidProject(request.resource.data);
+        allow update: if isOwner(userId) && isValidProject(request.resource.data)
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+      }
+
+      match /protocols/{protocolId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidProtocol(request.resource.data);
+        allow update: if isOwner(userId) && isValidProtocol(request.resource.data)
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+      }
+
+      match /chats/{chatId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidChatSession(request.resource.data);
+        allow update: if isOwner(userId) && isValidChatSession(request.resource.data)
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.createdAt == resource.data.createdAt;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

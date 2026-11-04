@@ -1,0 +1,7 @@
+{
+  "name": "BioNexus",
+  "description": "Elite Bioscience AI Research & Intelligence Platform with multi-model Gemini reasoning, real-time lab tools, and cloud workspace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

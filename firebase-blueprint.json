@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Bioscience research project or clinical study record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "userId": { "type": "string", "description": "Owner Google UID" },
+        "title": { "type": "string", "description": "Project title" },
+        "category": { "type": "string", "description": "Genomics, Proteomics, Bioinformatics, Drug Discovery, etc." },
+        "summary": { "type": "string", "description": "Brief abstract or summary" },
+        "content": { "type": "string", "description": "Detailed research notes or hypothesis" },
+        "tags": { "type": "array", "description": "Research subject keywords" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp()" }
+      },
+      "required": ["userId", "title", "category", "summary", "createdAt", "updatedAt"]
+    },
+    "Protocol": {
+      "title": "Protocol",
+      "description": "Standard Operating Procedure or laboratory experiment protocol",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "userId": { "type": "string", "description": "Owner Google UID" },
+        "name": { "type": "string", "description": "Protocol name" },
+        "category": { "type": "string", "description": "Protocol category" },
+        "reagents": { "type": "array", "description": "Reagents and chemicals required" },
+        "steps": { "type": "array", "description": "Ordered experimental procedure steps" },
+        "safetyNotes": { "type": "string", "description": "Biosafety level (BSL) notes and personal protective equipment requirements" },
+        "status": { "type": "string", "description": "Draft, Active, Validated, Archived" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp()" }
+      },
+      "required": ["userId", "name", "category", "safetyNotes", "status", "createdAt", "updatedAt"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "AI Bioscience assistant conversation thread metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Document ID" },
+        "userId": { "type": "string", "description": "Owner Google UID" },
+        "title": { "type": "string", "description": "Session topic or question" },
+        "modelUsed": { "type": "string", "description": "Gemini model identifier" },
+        "role": { "type": "string", "description": "Assigned AI specialist persona" },
+        "lastMessage": { "type": "string", "description": "Preview of last message" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp()" }
+      },
+      "required": ["userId", "title", "modelUsed", "role", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "User-isolated bioscience research projects"
+    },
+    "/users/{userId}/protocols/{protocolId}": {
+      "schema": { "$ref": "#/entities/Protocol" },
+      "description": "User-isolated lab experiment protocols"
+    },
+    "/users/{userId}/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/ChatSession" },
+      "description": "User-isolated AI research chat sessions"
+    }
+  }
+}
